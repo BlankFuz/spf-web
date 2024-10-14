@@ -1,0 +1,102 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logging SPF Bazaar</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Logging SPF Bazaar</h1>
+
+    <!-- Food selection form -->
+    <form id="foodForm">
+        <label for="foodSelect">Select Food:</label>
+        <select id="foodSelect">
+            <option value="" disabled selected>Select a food item</option>
+            <option value="Martabak Telur" data-price="15000">Martabak Telur - Rp 15.000</option>
+            <option value="Nasi Kepal Mentai" data-price="7500">Nasi Kepal Mentai - Rp 7.500</option>
+            <option value="Java Tea" data-price="6000">Java Tea - Rp 6.000</option>
+        </select>
+
+        <label for="quantity">Quantity:</label>
+        <input type="number" id="quantity" min="1" value="1" placeholder="Enter quantity">
+
+        <!-- Add a note for the cart -->
+        <label for="cartNote">Add a note for your cart:</label>
+        <input type="text" id="cartNote" placeholder="Add any special instructions or notes">
+
+        <button type="button" id="addToCartButton">Add to Cart</button>
+        <button type="submit">Submit Order</button>
+    </form>
+
+    <!-- Display the cart items before submission -->
+    <h2>Your Cart:</h2>
+    <ul id="cartItems"></ul>
+    <p id="cartTotalPriceDisplay">Cart Total: Rp 0.00</p>
+
+    <!-- Display the food items and total price after submission -->
+    <div>
+        <h3>Pending Orders</h3>
+        <ul id="foodItems"></ul>
+        <p id="totalPriceDisplay">Total Pending Orders: Rp 0.00</p>
+    </div>
+    <!-- Completed Orders Section -->
+    <div>
+        <h3>Completed Orders</h3>
+        <ul id="completedItems"></ul>
+        <p id="completedTotalPriceDisplay">Completed Total: Rp 0.00</p>
+    </div>
+    <!-- Buttons -->
+    <h2>Actions:</h2>
+    <button type="button" id="checkOrderStatusButton">Check Order Status</button>
+    <button type="button" id="syncButton">Sync Data</button>
+    <button id="exportButton">Export to Excel</button>
+
+    <script>
+        // Function to export purchases data to Excel
+        function exportToExcel(purchases) {
+            // Step 1: Prepare the data in a format suitable for Excel
+            const data = purchases.map((purchase, index) => ({
+                'No.': purchase.transactionNumber,
+                'Food Name': purchase.foodName,
+                'Quantity': purchase.quantity,
+                'Total Price': purchase.itemTotalPrice,
+                'Time': purchase.time,
+                'Note': purchase.cartNote || '-',
+                'Status': purchase.status
+            }));
+        
+            // Step 2: Create a new workbook and sheet
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Purchases");
+        
+            // Step 3: Export the workbook to a file
+            XLSX.writeFile(workbook, "purchases_data.xlsx");
+        }
+        
+        // Add event listener to the export button
+        document.getElementById('exportButton').addEventListener('click', function () {
+            const purchases = JSON.parse(localStorage.getItem('purchases')) || [];
+            if (purchases.length === 0) {
+                alert("No purchases to export.");
+                return;
+            }
+            exportToExcel(purchases);
+        });
+        </script>
+
+    <!-- Environment variables (for development only) -->
+    <script>
+        window.env = {
+            UPSTASH_REST_URL: 'https://noted-sparrow-28639.upstash.io',
+            UPSTASH_REST_TOKEN: 'AW_fAAIjcDE3MmVhNWZjMmIzYmE0YjVlODI2MWE4NGNkMzIyNjU1MnAxMA'
+        };
+    </script>
+
+    <!-- Link to your JavaScript file -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
